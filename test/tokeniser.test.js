@@ -1,7 +1,7 @@
 var Tokeniser = require("../lib/tokeniser").Tokeniser;
 var StringIterator = require("../lib/StringIterator");
 var tokens = require("../lib/tokens");
-var StringSource = require("../lib/StringSource");
+var StringSource = require("lop").StringSource;
 
 var keywords = ["true", "false"];
 var symbols = ["(", ")", "=>"];
