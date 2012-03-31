@@ -1,0 +1,12 @@
+{
+    "name": "shed-tokeniser",
+    "version": "0.1.0",
+    "dependencies": {
+        "underscore": "1.3.x",
+        "options": "git://github.com/mwilliamson/node-options.git"
+    },
+    "devDependencies": {
+        "nodeunit": "0.7.x",
+        "duck": "git://github.com/mwilliamson/duck.js.git"
+    }
+}
