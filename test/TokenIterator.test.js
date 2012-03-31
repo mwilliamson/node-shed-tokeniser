@@ -1,5 +1,4 @@
 var TokenIterator = require("../lib/TokenIterator");
-var tokeniser = require("../lib/tokeniser");
 var tokens = require("../lib/tokens");
 var StringSource = require("../lib/StringSource");
 
