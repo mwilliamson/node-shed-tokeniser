@@ -1,5 +1,4 @@
 var Tokeniser = require("../lib/tokeniser").Tokeniser;
-var StringIterator = require("../lib/StringIterator");
 var tokens = require("../lib/tokens");
 var StringSource = require("lop").StringSource;
 
@@ -105,11 +104,10 @@ exports.canParsePositiveIntegers =
 
 function stringIsTokenisedTo(string, expected) {
     var source = new StringSource(string);
-    var iterator = new StringIterator(source);
     var tokeniser = new Tokeniser({keywords: keywords, symbols: symbols});
     
     return function(test) {
-        test.deepEqual(expected, tokeniser.tokenise(iterator).tokens);
+        test.deepEqual(expected, tokeniser.tokenise(source).tokens);
         test.done();
     };
 };
