@@ -3,7 +3,7 @@ var tokens = require("../lib/tokens");
 var StringSource = require("lop").StringSource;
 
 var keywords = ["true", "false"];
-var symbols = ["(", ")", "=>"];
+var symbols = ["(", ")", "=>", "+"];
 
 var stringSourceRange = function(string, startIndex, endIndex) {
     return new StringSource(string).range(startIndex, endIndex);
@@ -102,6 +102,24 @@ exports.canParsePositiveIntegers =
         tokens.end(stringSourceRange("42", 2, 2))
     ]);
 
+exports.singleLineCommentsStartWithDoubleSlash =
+    stringIsTokenisedTo("42 // Blah", [
+        tokens.number("42", stringSourceRange("42 // Blah", 0, 2)),
+        tokens.whitespace(" ", stringSourceRange("42 // Blah", 2, 3)),
+        tokens.comment("// Blah", stringSourceRange("42 // Blah", 3, 10)),
+        tokens.end(stringSourceRange("42 // Blah", 10, 10))
+    ]);
+
+exports.singleLineCommentsEndAtNewLine =
+    stringIsTokenisedTo("42 // Blah\n+", [
+        tokens.number("42", stringSourceRange("42 // Blah\n+", 0, 2)),
+        tokens.whitespace(" ", stringSourceRange("42 // Blah\n+", 2, 3)),
+        tokens.comment("// Blah", stringSourceRange("42 // Blah\n+", 3, 10)),
+        tokens.whitespace("\n", stringSourceRange("42 // Blah\n+", 10, 11)),
+        tokens.symbol("+", stringSourceRange("42 // Blah\n+", 11, 12)),
+        tokens.end(stringSourceRange("42 // Blah\n+", 12, 12))
+    ]);
+
 function stringIsTokenisedTo(string, expected) {
     var source = new StringSource(string);
     var tokeniser = new Tokeniser({keywords: keywords, symbols: symbols});
@@ -111,3 +129,4 @@ function stringIsTokenisedTo(string, expected) {
         test.done();
     };
 };
+
