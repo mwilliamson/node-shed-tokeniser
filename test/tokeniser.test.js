@@ -169,6 +169,42 @@ exports.consistentIndentationProducesNoIndentTokens = (function() {
     ]);
 })();
 
+exports.returningToPreviousIndentationProducesSingleDedent = (function() {
+    var source = function(start, end) {
+        return stringSourceRange("(\n  1\n)", start, end);
+    };
+    return stringIsTokenisedTo("(\n  1\n)", [
+        tokens.symbol("(", source(0, 1)),
+        tokens.whitespace("\n", source(1, 2)),
+        tokens.indent("  ", source(2, 4)),
+        tokens.number("1", source(4, 5)),
+        tokens.whitespace("\n", source(5, 6)),
+        tokens.dedent(source(6, 6)),
+        tokens.symbol(")", source(6, 7)),
+        tokens.end(source(7, 7))
+    ]);
+})();
+
+exports.leavingMultipleLevelsOfIndentationCreatesMultipleDedents = (function() {
+    var source = function(start, end) {
+        return stringSourceRange("(\n  1\n   2\n3", start, end);
+    };
+    return stringIsTokenisedTo("(\n  1\n   2\n3", [
+        tokens.symbol("(", source(0, 1)),
+        tokens.whitespace("\n", source(1, 2)),
+        tokens.indent("  ", source(2, 4)),
+        tokens.number("1", source(4, 5)),
+        tokens.whitespace("\n  ", source(5, 8)),
+        tokens.indent(" ", source(8, 9)),
+        tokens.number("2", source(9, 10)),
+        tokens.whitespace("\n", source(10, 11)),
+        tokens.dedent(source(11, 11)),
+        tokens.dedent(source(11, 11)),
+        tokens.number("3", source(11, 12)),
+        tokens.end(source(12, 12))
+    ]);
+})();
+
 function stringIsTokenisedTo(string, expected) {
     var source = new StringSource(string);
     var tokeniser = new Tokeniser({keywords: keywords, symbols: symbols});
