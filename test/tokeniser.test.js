@@ -136,6 +136,7 @@ exports.spacesAfterNewLineIsTokenisedAsIndent = (function() {
         tokens.newLine("\n", source(1, 2)),
         tokens.indent("  ", source(2, 4)),
         tokens.number("1", source(4, 5)),
+        tokens.dedent(source(5, 5)),
         tokens.end(source(5, 5))
     ]);
 })();
@@ -157,6 +158,9 @@ exports.increasingIndentationIsTokenisedAsIndents = (function() {
         tokens.whitespace("   ", source(11, 14)),
         tokens.indent("    ", source(14, 18)),
         tokens.number("3", source(18, 19)),
+        tokens.dedent(source(19, 19)),
+        tokens.dedent(source(19, 19)),
+        tokens.dedent(source(19, 19)),
         tokens.end(source(19, 19))
     ]);
 })();
@@ -176,6 +180,7 @@ exports.consistentIndentationProducesNoIndentTokens = (function() {
         tokens.newLine("\n", source(9, 10)),
         tokens.whitespace("  ", source(10, 12)),
         tokens.number("3", source(12, 13)),
+        tokens.dedent(source(13, 13)),
         tokens.end(source(13, 13))
     ]);
 })();
