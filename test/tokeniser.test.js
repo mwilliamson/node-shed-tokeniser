@@ -31,9 +31,10 @@ exports.identifierIsTokenised =
     ]);
     
 exports.newLineIsTokenised =
-    stringIsTokenisedTo("\n", [
-        tokens.newLine("\n", stringSourceRange("\n", 0, 1)),
-        tokens.end(stringSourceRange("\n", 1, 1))
+    stringIsTokenisedTo("\n1", [
+        tokens.newLine("\n", stringSourceRange("\n1", 0, 1)),
+        tokens.number("1", stringSourceRange("\n1", 1, 2)),
+        tokens.end(stringSourceRange("\n1", 2, 2))
     ]);
     
 exports.whitespaceIsTokenised =
@@ -213,6 +214,16 @@ exports.leavingMultipleLevelsOfIndentationCreatesMultipleDedents = (function() {
         tokens.dedent(source(11, 11)),
         tokens.number("3", source(11, 12)),
         tokens.end(source(12, 12))
+    ]);
+})();
+
+exports.blankLinesAreConsideredWhitespace = (function() {
+    var source = function(start, end) {
+        return stringSourceRange("\n  ", start, end);
+    };
+    return stringIsTokenisedTo("\n  ", [
+        tokens.whitespace("\n  ", source(0, 3)),
+        tokens.end(source(3, 3))
     ]);
 })();
 
