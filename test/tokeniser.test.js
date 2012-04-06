@@ -30,6 +30,12 @@ exports.identifierIsTokenised =
         tokens.end(stringSourceRange("blah", 4, 4))
     ]);
     
+exports.newLineIsTokenised =
+    stringIsTokenisedTo("\n", [
+        tokens.newLine("\n", stringSourceRange("\n", 0, 1)),
+        tokens.end(stringSourceRange("\n", 1, 1))
+    ]);
+    
 exports.whitespaceIsTokenised =
     stringIsTokenisedTo("  \t\t\r ", [
         tokens.whitespace("  \t\t\r ", stringSourceRange("  \t\t\r ", 0, 6)),
@@ -115,7 +121,7 @@ exports.singleLineCommentsEndAtNewLine =
         tokens.number("42", stringSourceRange("42 // Blah\n+", 0, 2)),
         tokens.whitespace(" ", stringSourceRange("42 // Blah\n+", 2, 3)),
         tokens.comment("// Blah", stringSourceRange("42 // Blah\n+", 3, 10)),
-        tokens.whitespace("\n", stringSourceRange("42 // Blah\n+", 10, 11)),
+        tokens.newLine("\n", stringSourceRange("42 // Blah\n+", 10, 11)),
         tokens.symbol("+", stringSourceRange("42 // Blah\n+", 11, 12)),
         tokens.end(stringSourceRange("42 // Blah\n+", 12, 12))
     ]);
@@ -126,7 +132,7 @@ exports.spacesAfterNewLineIsTokenisedAsIndent = (function() {
     };
     return stringIsTokenisedTo("(\n  1", [
         tokens.symbol("(", source(0, 1)),
-        tokens.whitespace("\n", source(1, 2)),
+        tokens.newLine("\n", source(1, 2)),
         tokens.indent("  ", source(2, 4)),
         tokens.number("1", source(4, 5)),
         tokens.end(source(5, 5))
@@ -139,13 +145,15 @@ exports.increasingIndentationIsTokenisedAsIndents = (function() {
     };
     return stringIsTokenisedTo("(\n  1\n   2\n       3", [
         tokens.symbol("(", source(0, 1)),
-        tokens.whitespace("\n", source(1, 2)),
+        tokens.newLine("\n", source(1, 2)),
         tokens.indent("  ", source(2, 4)),
         tokens.number("1", source(4, 5)),
-        tokens.whitespace("\n  ", source(5, 8)),
+        tokens.newLine("\n", source(5, 6)),
+        tokens.whitespace("  ", source(6, 8)),
         tokens.indent(" ", source(8, 9)),
         tokens.number("2", source(9, 10)),
-        tokens.whitespace("\n   ", source(10, 14)),
+        tokens.newLine("\n", source(10, 11)),
+        tokens.whitespace("   ", source(11, 14)),
         tokens.indent("    ", source(14, 18)),
         tokens.number("3", source(18, 19)),
         tokens.end(source(19, 19))
@@ -158,12 +166,14 @@ exports.consistentIndentationProducesNoIndentTokens = (function() {
     };
     return stringIsTokenisedTo("(\n  1\n  2\n  3", [
         tokens.symbol("(", source(0, 1)),
-        tokens.whitespace("\n", source(1, 2)),
+        tokens.newLine("\n", source(1, 2)),
         tokens.indent("  ", source(2, 4)),
         tokens.number("1", source(4, 5)),
-        tokens.whitespace("\n  ", source(5, 8)),
+        tokens.newLine("\n", source(5, 6)),
+        tokens.whitespace("  ", source(6, 8)),
         tokens.number("2", source(8, 9)),
-        tokens.whitespace("\n  ", source(9, 12)),
+        tokens.newLine("\n", source(9, 10)),
+        tokens.whitespace("  ", source(10, 12)),
         tokens.number("3", source(12, 13)),
         tokens.end(source(13, 13))
     ]);
@@ -175,10 +185,10 @@ exports.returningToPreviousIndentationProducesSingleDedent = (function() {
     };
     return stringIsTokenisedTo("(\n  1\n)", [
         tokens.symbol("(", source(0, 1)),
-        tokens.whitespace("\n", source(1, 2)),
+        tokens.newLine("\n", source(1, 2)),
         tokens.indent("  ", source(2, 4)),
         tokens.number("1", source(4, 5)),
-        tokens.whitespace("\n", source(5, 6)),
+        tokens.newLine("\n", source(5, 6)),
         tokens.dedent(source(6, 6)),
         tokens.symbol(")", source(6, 7)),
         tokens.end(source(7, 7))
@@ -191,13 +201,14 @@ exports.leavingMultipleLevelsOfIndentationCreatesMultipleDedents = (function() {
     };
     return stringIsTokenisedTo("(\n  1\n   2\n3", [
         tokens.symbol("(", source(0, 1)),
-        tokens.whitespace("\n", source(1, 2)),
+        tokens.newLine("\n", source(1, 2)),
         tokens.indent("  ", source(2, 4)),
         tokens.number("1", source(4, 5)),
-        tokens.whitespace("\n  ", source(5, 8)),
+        tokens.newLine("\n", source(5, 6)),
+        tokens.whitespace("  ", source(6, 8)),
         tokens.indent(" ", source(8, 9)),
         tokens.number("2", source(9, 10)),
-        tokens.whitespace("\n", source(10, 11)),
+        tokens.newLine("\n", source(10, 11)),
         tokens.dedent(source(11, 11)),
         tokens.dedent(source(11, 11)),
         tokens.number("3", source(11, 12)),
