@@ -31,18 +31,18 @@ exports.identifierIsTokenised =
     ]);
     
 exports.whitespaceIsTokenised =
-    stringIsTokenisedTo("  \t\n\r ", [
-        tokens.whitespace("  \t\n\r ", stringSourceRange("  \t\n\r ", 0, 6)),
-        tokens.end(stringSourceRange("  \t\n\r ", 6, 6))
+    stringIsTokenisedTo("  \t\t\r ", [
+        tokens.whitespace("  \t\t\r ", stringSourceRange("  \t\t\r ", 0, 6)),
+        tokens.end(stringSourceRange("  \t\t\r ", 6, 6))
     ]);
     
 exports.runsOfDifferentTokensAreTokenised =
-    stringIsTokenisedTo("  \t\n\r blah true", [
-        tokens.whitespace("  \t\n\r ", stringSourceRange("  \t\n\r blah true", 0, 6)),
-        tokens.identifier("blah", stringSourceRange("  \t\n\r blah true", 6, 10)),
-        tokens.whitespace(" ", stringSourceRange("  \t\n\r blah true", 10, 11)),
-        tokens.keyword("true", stringSourceRange("  \t\n\r blah true", 11, 15)),
-        tokens.end(stringSourceRange("  \t\n\r blah true", 15, 15))
+    stringIsTokenisedTo("  \t\t\r blah true", [
+        tokens.whitespace("  \t\t\r ", stringSourceRange("  \t\t\r blah true", 0, 6)),
+        tokens.identifier("blah", stringSourceRange("  \t\t\r blah true", 6, 10)),
+        tokens.whitespace(" ", stringSourceRange("  \t\t\r blah true", 10, 11)),
+        tokens.keyword("true", stringSourceRange("  \t\t\r blah true", 11, 15)),
+        tokens.end(stringSourceRange("  \t\t\r blah true", 15, 15))
     ]);
     
 exports.symbolIsTokenised =
@@ -119,6 +119,55 @@ exports.singleLineCommentsEndAtNewLine =
         tokens.symbol("+", stringSourceRange("42 // Blah\n+", 11, 12)),
         tokens.end(stringSourceRange("42 // Blah\n+", 12, 12))
     ]);
+
+exports.spacesAfterNewLineIsTokenisedAsIndent = (function() {
+    var source = function(start, end) {
+        return stringSourceRange("(\n  1", start, end);
+    };
+    return stringIsTokenisedTo("(\n  1", [
+        tokens.symbol("(", source(0, 1)),
+        tokens.whitespace("\n", source(1, 2)),
+        tokens.indent("  ", source(2, 4)),
+        tokens.number("1", source(4, 5)),
+        tokens.end(source(5, 5))
+    ]);
+})();
+
+exports.increasingIndentationIsTokenisedAsIndents = (function() {
+    var source = function(start, end) {
+        return stringSourceRange("(\n  1\n   2\n       3", start, end);
+    };
+    return stringIsTokenisedTo("(\n  1\n   2\n       3", [
+        tokens.symbol("(", source(0, 1)),
+        tokens.whitespace("\n", source(1, 2)),
+        tokens.indent("  ", source(2, 4)),
+        tokens.number("1", source(4, 5)),
+        tokens.whitespace("\n  ", source(5, 8)),
+        tokens.indent(" ", source(8, 9)),
+        tokens.number("2", source(9, 10)),
+        tokens.whitespace("\n   ", source(10, 14)),
+        tokens.indent("    ", source(14, 18)),
+        tokens.number("3", source(18, 19)),
+        tokens.end(source(19, 19))
+    ]);
+})();
+
+exports.consistentIndentationProducesNoIndentTokens = (function() {
+    var source = function(start, end) {
+        return stringSourceRange("(\n  1\n  2\n  3", start, end);
+    };
+    return stringIsTokenisedTo("(\n  1\n  2\n  3", [
+        tokens.symbol("(", source(0, 1)),
+        tokens.whitespace("\n", source(1, 2)),
+        tokens.indent("  ", source(2, 4)),
+        tokens.number("1", source(4, 5)),
+        tokens.whitespace("\n  ", source(5, 8)),
+        tokens.number("2", source(8, 9)),
+        tokens.whitespace("\n  ", source(9, 12)),
+        tokens.number("3", source(12, 13)),
+        tokens.end(source(13, 13))
+    ]);
+})();
 
 function stringIsTokenisedTo(string, expected) {
     var source = new StringSource(string);
