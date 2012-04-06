@@ -227,6 +227,19 @@ exports.blankLinesAreConsideredWhitespace = (function() {
     ]);
 })();
 
+exports.blankLinesBetweenOtherTokensAreConsideredWhitespace = (function() {
+    var source = function(start, end) {
+        return stringSourceRange("a\n\nb", start, end);
+    };
+    return stringIsTokenisedTo("a\n\nb", [
+        tokens.identifier("a", source(0, 1)),
+        tokens.whitespace("\n", source(1, 2)),
+        tokens.newLine("\n", source(2, 3)),
+        tokens.identifier("b", source(3, 4)),
+        tokens.end(source(4, 4))
+    ]);
+})();
+
 function stringIsTokenisedTo(string, expected) {
     var source = new StringSource(string);
     var tokeniser = new Tokeniser({keywords: keywords, symbols: symbols});
