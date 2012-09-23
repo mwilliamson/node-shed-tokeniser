@@ -3,7 +3,7 @@ var tokens = require("../lib/tokens");
 var StringSource = require("lop").StringSource;
 
 var keywords = ["true", "false"];
-var symbols = ["(", ")", "=>", "+"];
+var symbols = ["(", ")", "=>", "+", "{", "}", "[", "]"];
 
 var stringSourceRange = function(string, startIndex, endIndex) {
     return new StringSource(string).range(startIndex, endIndex);
@@ -43,6 +43,84 @@ exports.runsOfDifferentTokensAreTokenised =
         tokens.whitespace(" ", stringSourceRange("  \t\n\r blah true", 10, 11)),
         tokens.keyword("true", stringSourceRange("  \t\n\r blah true", 11, 15)),
         tokens.end(stringSourceRange("  \t\n\r blah true", 15, 15))
+    ]);
+
+exports.newLineNotFollowedByWhitespaceIsSignificant =
+    stringIsTokenisedTo("x\ny", [
+        tokens.identifier("x", stringSourceRange("x\ny", 0, 1)),
+        tokens.significantNewLine("\n", stringSourceRange("x\ny", 1, 2)),
+        tokens.identifier("y", stringSourceRange("x\ny", 2, 3)),
+        tokens.end(stringSourceRange("x\ny", 3, 3))
+    ]);
+
+exports.newLineAtEndOfInputIsSignificant =
+    stringIsTokenisedTo("\n", [
+        tokens.significantNewLine("\n", stringSourceRange("\n", 0, 1)),
+        tokens.end(stringSourceRange("\n", 1, 1))
+    ]);
+
+exports.newLineFollowedByWhitespaceIsNotSignificant =
+    stringIsTokenisedTo("x\n y", [
+        tokens.identifier("x", stringSourceRange("x\n y", 0, 1)),
+        tokens.whitespace("\n ", stringSourceRange("x\n y", 1, 3)),
+        tokens.identifier("y", stringSourceRange("x\n y", 3, 4)),
+        tokens.end(stringSourceRange("x\n y", 4, 4))
+    ]);
+
+exports.whitespaceFollowedByNewLineNotFollowedByWhitespaceIsSignificant =
+    stringIsTokenisedTo("x \ny", [
+        tokens.identifier("x", stringSourceRange("x \ny", 0, 1)),
+        tokens.whitespace(" ", stringSourceRange("x \ny", 1, 2)),
+        tokens.significantNewLine("\n", stringSourceRange("x \ny", 2, 3)),
+        tokens.identifier("y", stringSourceRange("x \ny", 3, 4)),
+        tokens.end(stringSourceRange("x \ny", 4, 4))
+    ]);
+
+exports.newLineAtOpeningIndentationOfCurlyBlockIsSignificant =
+    stringIsTokenisedTo("{  x\n  y}", [
+        tokens.symbol("{", stringSourceRange("{  x\n  y}", 0, 1)),
+        tokens.whitespace("  ", stringSourceRange("{  x\n  y}", 1, 3)),
+        tokens.identifier("x", stringSourceRange("{  x\n  y}", 3, 4)),
+        tokens.significantNewLine("\n", stringSourceRange("{  x\n  y}", 4, 5)),
+        tokens.whitespace("  ", stringSourceRange("{  x\n  y}", 5, 7)),
+        tokens.identifier("y", stringSourceRange("{  x\n  y}", 7, 8)),
+        tokens.symbol("}", stringSourceRange("{  x\n  y}", 8, 9)),
+        tokens.end(stringSourceRange("{  x\n  y}", 9, 9))
+    ]);
+
+exports.newLineAtOpeningIndentationOfCurlyBlockIsSignificant =
+    stringIsTokenisedTo("{  x\n  y}", [
+        tokens.symbol("{", stringSourceRange("{  x\n  y}", 0, 1)),
+        tokens.whitespace("  ", stringSourceRange("{  x\n  y}", 1, 3)),
+        tokens.identifier("x", stringSourceRange("{  x\n  y}", 3, 4)),
+        tokens.significantNewLine("\n", stringSourceRange("{  x\n  y}", 4, 5)),
+        tokens.whitespace("  ", stringSourceRange("{  x\n  y}", 5, 7)),
+        tokens.identifier("y", stringSourceRange("{  x\n  y}", 7, 8)),
+        tokens.symbol("}", stringSourceRange("{  x\n  y}", 8, 9)),
+        tokens.end(stringSourceRange("{  x\n  y}", 9, 9))
+    ]);
+
+exports.canTokeniseCurlyBlockWithoutNewLine =
+    stringIsTokenisedTo("{}", [
+        tokens.symbol("{", stringSourceRange("{}", 0, 1)),
+        tokens.symbol("}", stringSourceRange("{}", 1, 2)),
+        tokens.end(stringSourceRange("{}", 2, 2))
+    ]);
+
+exports.newLinesInsideParensAreNotSignificant =
+    stringIsTokenisedTo("(\n)", [
+        tokens.symbol("(", stringSourceRange("(\n)", 0, 1)),
+        tokens.whitespace("\n", stringSourceRange("(\n)", 1, 2)),
+        tokens.symbol(")", stringSourceRange("(\n)", 2, 3)),
+        tokens.end(stringSourceRange("(\n)", 3, 3))
+    ]);
+
+exports.newLinesInsideSquareBracketsAreNotSignificant =
+    stringIsTokenisedTo("[\n]", [
+        tokens.symbol("[", stringSourceRange("[\n]", 0, 1)),
+        tokens.whitespace("\n", stringSourceRange("[\n]", 1, 2)),
+        tokens.symbol("]", stringSourceRange("[\n]", 2, 3)),
+        tokens.end(stringSourceRange("[\n]", 3, 3))
     ]);
     
 exports.symbolIsTokenised =
@@ -111,13 +189,13 @@ exports.singleLineCommentsStartWithDoubleSlash =
     ]);
 
 exports.singleLineCommentsEndAtNewLine =
-    stringIsTokenisedTo("42 // Blah\n+", [
-        tokens.number("42", stringSourceRange("42 // Blah\n+", 0, 2)),
-        tokens.whitespace(" ", stringSourceRange("42 // Blah\n+", 2, 3)),
-        tokens.comment("// Blah", stringSourceRange("42 // Blah\n+", 3, 10)),
-        tokens.whitespace("\n", stringSourceRange("42 // Blah\n+", 10, 11)),
-        tokens.symbol("+", stringSourceRange("42 // Blah\n+", 11, 12)),
-        tokens.end(stringSourceRange("42 // Blah\n+", 12, 12))
+    stringIsTokenisedTo("42 // Blah\n +", [
+        tokens.number("42", stringSourceRange("42 // Blah\n +", 0, 2)),
+        tokens.whitespace(" ", stringSourceRange("42 // Blah\n +", 2, 3)),
+        tokens.comment("// Blah", stringSourceRange("42 // Blah\n +", 3, 10)),
+        tokens.whitespace("\n ", stringSourceRange("42 // Blah\n +", 10, 12)),
+        tokens.symbol("+", stringSourceRange("42 // Blah\n +", 12, 13)),
+        tokens.end(stringSourceRange("42 // Blah\n +", 13, 13))
     ]);
 
 function stringIsTokenisedTo(string, expected) {
